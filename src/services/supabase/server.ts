@@ -8,19 +8,19 @@ import { capabilities, publicEnv, serverEnv } from "@/lib/utils/env";
 import type { Database } from "./types";
 
 /**
- * Inferred Supabase client types — track upstream generic changes without
- * forcing us to mirror them.
- */
-type SupabaseServerClient = ReturnType<typeof createServerClient<Database>>;
-
-/**
  * Server-side Supabase client (Server Components / Route Handlers).
  *
  * Reads/writes session cookies through Next.js' async `cookies()` API. Returns
  * `null` when Supabase env is unset (Phase 1) so server code can render a
  * safe fallback rather than crash.
+ *
+ * The return type is intentionally inferred so it tracks the upstream
+ * `@supabase/ssr` factory across versions — earlier explicit annotations
+ * via `ReturnType<typeof createServerClient<Database>>` did not propagate
+ * the `Database` generic into `.from()` builders, which collapsed
+ * `Insert/Update` types to `never`.
  */
-export const getSupabaseServerClient = async (): Promise<SupabaseServerClient | null> => {
+export const getSupabaseServerClient = async () => {
   if (!capabilities.hasSupabasePublic) return null;
 
   const cookieStore = await cookies();
