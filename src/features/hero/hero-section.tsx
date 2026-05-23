@@ -1,23 +1,22 @@
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
-import { GradientBg } from "@/components/ui/gradient-bg";
 import { Magnetic } from "@/components/ui/magnetic";
 import { FadeIn } from "@/components/motion/fade-in";
 import { Reveal } from "@/components/motion/reveal";
 import { siteConfig } from "@/lib/site-config";
 
+import { HeroSceneMount } from "./hero-scene-mount";
+
 /**
- * `<HeroSection>` — Phase 1 hero placeholder.
+ * `<HeroSection>` — the cinematic landing surface.
  *
- * This is a *server component* shell with the cinematic copy, eyebrow, CTAs,
- * and decorative gradient layers in place. Phase 2 will replace the gradient
- * background with a dynamically imported R3F scene mounted into the same
- * `<div data-hero-scene>` slot, rendered behind the foreground content.
+ * Composition (back-to-front):
+ *   1. **R3F scene (`<HeroSceneMount>`)** — dynamically imported, client-only,
+ *      tier-gated. Falls back to a static gradient inside its own boundary.
+ *   2. **Foreground content** — copy, CTAs, stat row. HTML/CSS only.
  *
- * Why a placeholder shipping today:
- *  - Locks in the layout, type ramp, and rhythm so Phase 2 doesn't churn it.
- *  - Lets Lighthouse / SEO / content reviews start now.
- *  - Provides the exact copy hooks the brief specified.
+ * Stays a server component (no client deps in this file) so it streams as
+ * fast as possible and the hero copy is in the initial HTML.
  */
 export const HeroSection = () => {
   return (
@@ -25,14 +24,9 @@ export const HeroSection = () => {
       aria-label="Intro"
       className="relative isolate flex min-h-[88vh] items-center overflow-hidden"
     >
-      {/* Phase-2 R3F scene mounts here. */}
-      <div
-        data-hero-scene
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10"
-      >
-        <GradientBg variant="aurora" />
-        <GradientBg variant="grid" />
+      {/* Background layer — gradient + (optional) cinematic 3D scene. */}
+      <div data-hero-scene aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+        <HeroSceneMount />
       </div>
 
       <Container className="relative">
@@ -90,6 +84,21 @@ export const HeroSection = () => {
           </FadeIn>
         </div>
       </Container>
+
+      {/* Scroll cue — subtle, accessibility-safe (suppressed via reduced-motion). */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-6 mx-auto flex w-max flex-col items-center gap-1.5 text-(--color-paper-300) md:bottom-8"
+      >
+        <span className="font-mono text-[10px] tracking-[0.3em] uppercase">Scroll</span>
+        <span
+          className="block h-8 w-px animate-(--animate-scan)"
+          style={{
+            background:
+              "linear-gradient(to bottom, transparent, var(--color-accent-cyan), transparent)",
+          }}
+        />
+      </div>
     </section>
   );
 };
