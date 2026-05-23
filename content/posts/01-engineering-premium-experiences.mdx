@@ -1,0 +1,44 @@
+---
+title: "Engineering, not decoration"
+excerpt: "How we think about motion, 3D, and visual polish at NishantWebLab — and why the best premium experiences are the ones you don't notice."
+publishedAt: "2026-04-22"
+category: "engineering"
+tags: ["motion", "design-systems", "philosophy"]
+author: "NishantWebLab"
+---
+
+The most common pattern I see in agency work is this: motion bolted on after the build, 3D dropped in to tick a box, "premium feel" expressed entirely through gradients. The code ships, the marketing site looks great in screenshots, and the actual user experience is heavy, slow, and a little embarrassing on a mid-tier phone.
+
+We try to do the opposite.
+
+## Motion is a load-bearing element
+
+Every animation in our stack has to answer one question: **what does this communicate?** A magnetic hover communicates *interactive*. A staggered reveal communicates *structure*. A camera drift in a hero scene communicates *space and depth*. If a motion doesn't answer that question, it gets cut.
+
+The corollary is that a *good* motion system disappears. Users don't think "oh, nice animation". They think "this feels right". That's the bar.
+
+## 3D should respect the GPU it runs on
+
+Three lessons we've learned the hard way:
+
+1. **Adaptive rendering tier.** A blanket 60-fps target across all devices is naive. Detect tier on mount (`navigator.hardwareConcurrency`, `deviceMemory`, `prefers-reduced-motion`, viewport width) and ship different complexity per tier.
+2. **Bloom is a tax.** Post-processing doubles your render passes. Use it on *high* tier only, and downgrade at runtime if you measure sustained FPS drops.
+3. **Suspend, don't block.** Heavy assets (HDRIs, large models) belong in `<Suspense>`, never on the critical path.
+
+## The discipline tradeoff
+
+A premium feel is not free. It costs you milliseconds of build time, kilobytes of bundle, and weeks of taste-driven iteration. The way to keep it from costing you *credibility* is to put performance budgets in writing on day one.
+
+For our standard build:
+- Lighthouse Performance ≥ 95 on mid-tier mobile
+- LCP ≤ 1.8s on a Moto G4 emulation
+- TBT ≤ 200ms
+- CLS ≤ 0.05
+
+If a feature breaks one of these, it doesn't ship until we either find the speed or remove the feature. There's no third option.
+
+## Why premium feels expensive
+
+Premium feels expensive because you can *tell* the team didn't compromise. Every interaction is intentional. Every load state is graceful. The dark mode isn't a `darkMode: true` toggle — it's a deliberate palette tuned for OLED. The 404 page isn't a placeholder — it's a moment.
+
+That's what we're building toward.

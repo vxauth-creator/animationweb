@@ -1,0 +1,80 @@
+---
+title: "Design tokens with Tailwind v4"
+excerpt: "Why we moved our token system from a `tailwind.config.ts` to a CSS-first `@theme` block — and what it bought us."
+publishedAt: "2026-02-09"
+category: "design-systems"
+tags: ["tailwind", "css", "tokens"]
+author: "NishantWebLab"
+---
+
+Tailwind v4 ships a CSS-first configuration model. Instead of declaring tokens in a JavaScript config and exporting them to CSS at build time, you declare them in a `@theme` block and Tailwind reads them directly. We've rebuilt our design system around this and would not go back.
+
+## The setup
+
+```css
+@import "tailwindcss";
+
+@theme {
+  --color-ink-50:        #05060a;
+  --color-accent-blue:   #3b82ff;
+  --color-accent-violet: #7c5cff;
+  --font-display: var(--font-space-grotesk), system-ui, sans-serif;
+  --ease-smooth:  cubic-bezier(0.22, 1, 0.36, 1);
+}
+```
+
+Every token is a CSS custom property. Tailwind generates the corresponding utility classes (`bg-ink-50`, `text-accent-violet`, `font-display`, `ease-smooth`) automatically. When you need to read a token in JS, it's a one-liner:
+
+```ts
+const violet = getComputedStyle(root).getPropertyValue("--color-accent-violet");
+```
+
+## Why CSS-first matters
+
+Three concrete wins.
+
+**1. The browser becomes the source of truth.** Live-edit a token in DevTools and the entire site updates. With a JS config you'd need a rebuild.
+
+**2. Theming is composable.** Override a custom property at any layer of the DOM and everything inside that layer adopts it. We don't (yet) ship a light theme, but when we do it'll be a single `@layer base` block — not a "fork the tokens" exercise.
+
+**3. The TS layer can be much smaller.** We keep a typed mirror at `src/lib/design/tokens.ts` for animation logic and R3F materials, but it's no longer the source of truth — it's a *reference* to the CSS, which keeps it small and fast to maintain.
+
+## The pattern that works
+
+We split tokens into two layers:
+
+- **Base tokens** in `@theme` — colors, fonts, radii, easings. These are stable across the lifetime of the brand.
+- **Semantic aliases** in `:root` — `--surface-0`, `--foreground`, `--border-subtle`. These map base tokens to *meaning* and are the values consumers actually read.
+
+```css
+:root {
+  --surface-0: var(--color-ink-50);
+  --foreground: var(--color-paper-100);
+  --border-subtle: color-mix(in oklab, var(--color-paper-200) 8%, transparent);
+}
+```
+
+The semantic layer is what makes light mode possible later — change those mappings, the entire site rebrands.
+
+## A small surprise
+
+Tailwind v4 picks up custom easings declared in `@theme` and exposes them as utility classes. Declaring `--ease-smooth: cubic-bezier(...)` automatically gives you `ease-smooth` as a transition utility. We use this everywhere.
+
+```tsx
+className="transition-transform duration-300 ease-smooth"
+```
+
+It's a small thing. But the design-system-to-utility-class pipeline being entirely declarative is what makes the v4 architecture feel like an upgrade, not a rewrite.
+
+## What we kept
+
+- `tailwind-merge` for runtime class composition. Nothing changed there.
+- `prettier-plugin-tailwindcss` for ordering. Still essential.
+- Our `cn()` helper. Same shape, same call sites.
+
+## What we cut
+
+- The 200-line `tailwind.config.ts`. Gone. Tokens live in CSS.
+- A small custom `tokens-to-css.mjs` build script. Gone. CSS *is* the build.
+
+Migration took an afternoon. The system feels lighter. We won't go back.
