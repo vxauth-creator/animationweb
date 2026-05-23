@@ -1,0 +1,54 @@
+{
+  "name": "nishantweblab",
+  "version": "0.1.0",
+  "private": true,
+  "description": "NishantWebLab — Engineering premium digital experiences.",
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@9.12.3",
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^3.9.1",
+    "@react-three/drei": "^10.0.0",
+    "@react-three/fiber": "^9.0.0",
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.46.1",
+    "@tanstack/react-query": "^5.59.20",
+    "clsx": "^2.1.1",
+    "geist": "^1.3.1",
+    "gsap": "^3.12.5",
+    "lenis": "^1.1.18",
+    "motion": "^11.11.17",
+    "next": "^15.0.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-hook-form": "^7.53.2",
+    "tailwind-merge": "^2.5.4",
+    "three": "^0.170.0",
+    "zod": "^3.23.8",
+    "zustand": "^5.0.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0-beta.4",
+    "@types/node": "^22.9.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/three": "^0.170.0",
+    "eslint": "^9.14.0",
+    "eslint-config-next": "^15.0.3",
+    "postcss": "^8.4.49",
+    "prettier": "^3.3.3",
+    "prettier-plugin-tailwindcss": "^0.6.8",
+    "tailwindcss": "^4.0.0-beta.4",
+    "typescript": "^5.6.3"
+  }
+}

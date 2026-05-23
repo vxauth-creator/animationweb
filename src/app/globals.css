@@ -1,0 +1,242 @@
+@import "tailwindcss";
+
+/* =============================================================================
+ * NishantWebLab — Design tokens (Tailwind v4 `@theme`)
+ *
+ * This is the SOURCE OF TRUTH for the rendered design system.
+ * The TypeScript mirror lives at `src/lib/design/tokens.ts`.
+ * Keep both in sync.
+ * =========================================================================== */
+@theme {
+  /* ---------- Colors ------------------------------------------------------- */
+  /* Ink — backgrounds: deep black -> graphite -> dark navy. */
+  --color-ink-0: #000000;
+  --color-ink-50: #05060a;
+  --color-ink-100: #0a0c12;
+  --color-ink-200: #0f1218;
+  --color-ink-300: #151923;
+  --color-ink-400: #1c2230;
+  --color-ink-500: #252c3d;
+  --color-ink-600: #2f3850;
+
+  /* Accents — electric blue / neon cyan / violet glow. */
+  --color-accent-blue: #3b82ff;
+  --color-accent-cyan: #22e6ff;
+  --color-accent-violet: #7c5cff;
+  --color-accent-glow: #a78bff;
+
+  /* Paper — soft white highlights / typography. */
+  --color-paper-50: #f5f7ff;
+  --color-paper-100: #e6eaf5;
+  --color-paper-200: #b8c0d6;
+  --color-paper-300: #8993ae;
+  --color-paper-400: #5a647e;
+
+  /* Semantic. */
+  --color-success: #22e6a8;
+  --color-warning: #ffc857;
+  --color-danger: #ff5d73;
+
+  /* ---------- Typography --------------------------------------------------- */
+  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+
+  /* ---------- Radii / surfaces -------------------------------------------- */
+  --radius-xs: 0.375rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+
+  /* ---------- Custom easings (Tailwind v4 picks these up for transitions) -- */
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-sharp: cubic-bezier(0.83, 0, 0.17, 1);
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ---------- Animations --------------------------------------------------- */
+  --animate-pulse-slow: pulse-slow 4s var(--ease-soft) infinite;
+  --animate-shimmer: shimmer 2.6s var(--ease-soft) infinite;
+  --animate-float: float 8s var(--ease-soft) infinite;
+  --animate-scan: scan 4s var(--ease-soft) infinite;
+}
+
+/* =============================================================================
+ * Keyframes
+ * =========================================================================== */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes scan {
+  0% { transform: translateY(-100%); opacity: 0; }
+  10% { opacity: 0.8; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+
+/* =============================================================================
+ * Base layer — dark-first defaults.
+ * =========================================================================== */
+@layer base {
+  :root {
+    color-scheme: dark;
+    /* Surface tokens — semantic aliases used by primitives. */
+    --surface-0: var(--color-ink-50);
+    --surface-1: var(--color-ink-100);
+    --surface-2: var(--color-ink-200);
+    --surface-elevated: color-mix(in oklab, var(--color-ink-200) 70%, transparent);
+    --border-subtle: color-mix(in oklab, var(--color-paper-200) 8%, transparent);
+    --border-strong: color-mix(in oklab, var(--color-paper-200) 16%, transparent);
+    --foreground: var(--color-paper-100);
+    --foreground-muted: var(--color-paper-300);
+
+    /* Section rhythm. */
+    --section-y: clamp(5rem, 10vw, 9rem);
+    --section-y-sm: clamp(3rem, 6vw, 5rem);
+    --container-x: clamp(1rem, 4vw, 2rem);
+    --max-content: 80rem;
+  }
+
+  * {
+    border-color: var(--border-subtle);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--surface-0);
+    color: var(--foreground);
+    font-family: var(--font-body);
+    font-feature-settings: "ss01", "cv11";
+    overflow-x: hidden;
+
+    /* Ambient cinematic background — subtle, performant (single fixed layer). */
+    background-image:
+      radial-gradient(
+        ellipse 80% 60% at 50% -10%,
+        color-mix(in oklab, var(--color-accent-violet) 18%, transparent),
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse 60% 50% at 100% 0%,
+        color-mix(in oklab, var(--color-accent-blue) 12%, transparent),
+        transparent 60%
+      ),
+      linear-gradient(180deg, var(--color-ink-50) 0%, var(--color-ink-100) 100%);
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    background-color: color-mix(in oklab, var(--color-accent-violet) 50%, transparent);
+    color: var(--color-paper-50);
+  }
+
+  /* Focus rings — accessible and cinematic. */
+  :focus-visible {
+    outline: 2px solid var(--color-accent-cyan);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Reduced motion — kill non-essential animation. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* =============================================================================
+ * Component utilities — composable surface / glow primitives.
+ * =========================================================================== */
+@layer components {
+  .surface-glass {
+    background: color-mix(in oklab, var(--color-ink-200) 60%, transparent);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid var(--border-subtle);
+  }
+
+  .surface-glass-strong {
+    background: color-mix(in oklab, var(--color-ink-100) 75%, transparent);
+    backdrop-filter: blur(28px) saturate(160%);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
+    border: 1px solid var(--border-strong);
+  }
+
+  .text-gradient {
+    background: linear-gradient(
+      120deg,
+      var(--color-paper-50) 0%,
+      var(--color-accent-cyan) 50%,
+      var(--color-accent-violet) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .glow-accent {
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--color-accent-blue) 30%, transparent),
+      0 12px 40px -8px color-mix(in oklab, var(--color-accent-violet) 35%, transparent);
+  }
+}
+
+/* =============================================================================
+ * Utilities — small, composable.
+ * =========================================================================== */
+@layer utilities {
+  .container-x {
+    padding-left: var(--container-x);
+    padding-right: var(--container-x);
+  }
+
+  .max-content {
+    max-width: var(--max-content);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* GPU-friendly hint for transformed containers (use sparingly). */
+  .gpu {
+    transform: translateZ(0);
+    will-change: transform, opacity;
+  }
+
+  /* Hide scrollbar for cinematic carousels. */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+}
