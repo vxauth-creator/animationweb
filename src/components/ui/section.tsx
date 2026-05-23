@@ -45,7 +45,7 @@ const sizeClasses: Record<NonNullable<SectionProps["size"]>, string> = {
  * ```
  */
 export const Section = ({
-  as: Tag = "section",
+  as,
   size = "regular",
   eyebrow,
   heading,
@@ -56,6 +56,8 @@ export const Section = ({
   ...rest
 }: SectionProps) => {
   const hasHeader = Boolean(eyebrow ?? heading ?? description);
+  // Cast to a permissive ElementType — see GlassCard for the rationale.
+  const Tag = (as ?? "section") as ElementType<ComponentPropsWithoutRef<"section">>;
 
   return (
     <Tag
