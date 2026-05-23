@@ -1,9 +1,9 @@
-import Link from "next/link";
+import { redirect } from "next/navigation";
 
-import { Button } from "@/components/ui/button";
-import { GlassCard } from "@/components/ui/glass-card";
-import { GlowBorder } from "@/components/ui/glow-border";
+import { AuthCard, AuthLink } from "@/features/auth/auth-card";
+import { LoginForm } from "@/features/auth/login-form";
 import { buildMetadata } from "@/lib/seo/metadata";
+import { getCurrentUser } from "@/services/supabase/auth";
 
 export const metadata = buildMetadata({
   title: "Sign in",
@@ -12,47 +12,40 @@ export const metadata = buildMetadata({
   noIndex: true,
 });
 
-export default function LoginPage() {
+interface LoginPageProps {
+  searchParams: Promise<{ next?: string; error?: string }>;
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const params = await searchParams;
+
+  // Already signed in? Bounce to dashboard.
+  const user = await getCurrentUser();
+  if (user) redirect("/dashboard");
+
   return (
-    <GlowBorder accent="blue">
-      <GlassCard variant="strong" sheen className="p-8">
-        <p className="font-mono text-xs tracking-[0.2em] text-(--color-accent-cyan) uppercase">
-          Studio access
+    <AuthCard
+      eyebrow="Studio access"
+      accent="blue"
+      title="Sign in"
+      description="Use the email and password you set up for the studio dashboard."
+      footer={
+        <>
+          New to the studio? <AuthLink href="/signup">Create an account</AuthLink>
+          <span aria-hidden>·</span>
+          <AuthLink href="/reset">Forgot password</AuthLink>
+        </>
+      }
+    >
+      {params.error ? (
+        <p
+          role="alert"
+          className="mb-5 rounded-xl border border-(--color-danger)/40 bg-(--color-danger)/10 px-4 py-3 text-sm text-(--color-danger)"
+        >
+          {decodeURIComponent(params.error)}
         </p>
-        <h1 className="mt-3 text-3xl leading-tight font-semibold">Sign in</h1>
-        <p className="mt-3 text-sm text-(--foreground-muted)">
-          Authentication ships in <span className="text-(--foreground)">Phase 4</span>. The
-          form will be wired to Supabase Auth with email + magic-link sign-in.
-        </p>
-
-        <form className="mt-8 grid gap-4" aria-label="Sign in (preview)">
-          <label className="grid gap-1.5">
-            <span className="text-xs tracking-[0.18em] text-(--color-paper-300) uppercase">
-              Email
-            </span>
-            <input
-              type="email"
-              disabled
-              placeholder="you@studio.com"
-              className="h-11 rounded-xl border border-(--border-strong) bg-(--surface-1)/40 px-4 text-sm placeholder:text-(--color-paper-400)/70 focus:border-(--color-accent-blue)/50 focus:outline-none"
-            />
-          </label>
-          <Button type="submit" disabled>
-            Continue
-          </Button>
-        </form>
-
-        <p className="mt-6 text-xs text-(--foreground-muted)">
-          New to the studio?{" "}
-          <Link href="/signup" className="text-(--color-accent-cyan) hover:underline">
-            Create an account
-          </Link>
-          ·{" "}
-          <Link href="/reset" className="text-(--color-accent-cyan) hover:underline">
-            Forgot password
-          </Link>
-        </p>
-      </GlassCard>
-    </GlowBorder>
+      ) : null}
+      <LoginForm next={params.next} />
+    </AuthCard>
   );
 }

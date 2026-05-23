@@ -1,0 +1,77 @@
+---
+title: "A performance budget for React Three Fiber"
+excerpt: "How we ship cinematic 3D scenes that hold 60 fps on mid-tier mobile — adaptive DPR, dynamic imports, and the post-processing tax."
+publishedAt: "2026-03-14"
+category: "engineering"
+tags: ["r3f", "performance", "three.js"]
+author: "NishantWebLab"
+---
+
+Three.js is fast. R3F is a thin wrapper. Where 3D scenes get slow is in the *defaults* — high pixel ratios on retina, full post-processing on every device, scene graphs that don't know how to gracefully degrade. Here's how we keep the cinematic feel while staying within budget.
+
+## The four levers
+
+In our hero scene there are exactly four things we tune per perf tier:
+
+```ts
+const dpr        = tier === "high" ? [1, 2]  : [1, 1.5];
+const segments   = tier === "high" ? 64       : 24;
+const bloom      = tier === "high";
+const particles  = tier === "high" ? 140      : 70;
+```
+
+- **DPR cap.** Capping pixel ratio at 1.5 on medium-tier doubles framerate on most retina laptops with no perceptible quality loss.
+- **Geometry detail.** A 64-segment icosahedron is gorgeous. A 24-segment one is *also* gorgeous when wrapped in a distortion shader. Cut what you can.
+- **Bloom.** Post-processing doubles render passes. Reserve it for `high` tier and auto-disable when `PerformanceMonitor` reports sustained drops.
+- **Particle counts.** Restraint here is also a *visual* win — chaotic particles cheapen the scene.
+
+## Detecting tier
+
+Our `useDevicePerfTier` hook composites several signals:
+
+```ts
+let score = 0;
+score += memory >= 8 ? 2 : memory >= 4 ? 1 : 0;
+score += cores  >= 8 ? 2 : cores  >= 4 ? 1 : 0;
+score += saveData ? -2 : 0;
+score += isSmallViewport ? -1 : 0;
+return score >= 4 ? "high" : score >= 2 ? "medium" : "low";
+```
+
+`prefers-reduced-motion: reduce` short-circuits to `low` (which means we don't mount the canvas at all — the gradient backdrop carries the visual).
+
+## Dynamic imports are non-negotiable
+
+The first time we shipped an R3F hero, the whole three.js bundle (~150 kB gz) ended up in First Load JS. After moving to `next/dynamic` with `ssr: false`, the canvas only loads on devices that get past the tier gate:
+
+```tsx
+const HeroCanvas = dynamic(
+  () => import("./scene/hero-canvas").then(m => m.HeroCanvas),
+  { ssr: false, loading: () => null }
+);
+```
+
+The static gradient sits underneath as a guaranteed fallback. Worst-case (slow network, JS off, scene crash inside an `<ErrorBoundary>`), you still get a beautiful page.
+
+## Measure, don't guess
+
+Two flags we always ship:
+
+- `PerformanceMonitor` from Drei — fires `onDecline` when frame timing degrades. Use it to flip bloom off without reloading.
+- `AdaptiveDpr` — automatically lowers DPR when the renderer is struggling.
+
+Together they mean we don't have to be paranoid about getting the tier classification *exactly* right at startup. The scene self-corrects.
+
+## A short checklist
+
+Before shipping any 3D scene:
+
+- [ ] Mounts inside `next/dynamic` with `ssr: false`
+- [ ] Falls back to a static visual when JS is off
+- [ ] `prefers-reduced-motion` shows the static fallback
+- [ ] DPR cap per tier
+- [ ] Post-processing on high tier only
+- [ ] `PerformanceMonitor` wired with a sane downgrade strategy
+- [ ] Wrapped in `<ErrorBoundary>` so a context loss doesn't crash the page
+
+Everything else is taste.

@@ -1,13 +1,12 @@
 /**
- * Supabase Database types — skeleton.
+ * Supabase Database types — schema mirror.
  *
- * In Phase 4 this file will be REGENERATED from the live schema with:
+ * Hand-authored to mirror `supabase/migrations/*.sql`. Regenerate from a live
+ * project with:
  *
- *   pnpm supabase gen types typescript --project-id <id> > src/services/supabase/types.ts
+ *   pnpm supabase gen types typescript --linked > src/services/supabase/types.ts
  *
- * The shape below is intentionally hand-authored as a forward-compatible
- * skeleton so the rest of the app can compile against it today and we can
- * swap the generated output in without churn.
+ * Until then, keep this file in lockstep with the SQL.
  */
 
 export type Json =
@@ -18,8 +17,23 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-/** Roles enforced via RLS in Phase 4. Mirror of `src/types#Role`. */
+/** Roles enforced by RLS. Mirror of `src/types#Role`. */
 export type DbRole = "admin" | "editor" | "client";
+
+export type ProjectCategory =
+  | "saas"
+  | "marketing"
+  | "dashboard"
+  | "commerce"
+  | "ai"
+  | "experience";
+
+export type Accent = "blue" | "cyan" | "violet";
+
+export interface ProjectMetric {
+  value: string;
+  label: string;
+}
 
 export interface Database {
   public: {
@@ -46,17 +60,51 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["profiles"]["Insert"]>;
         Relationships: [];
       };
+
+      services: {
+        Row: {
+          id: string;
+          slug: string;
+          title: string;
+          summary: string;
+          capabilities: string[];
+          metric_value: string | null;
+          metric_label: string | null;
+          accent: Accent;
+          glyph: string;
+          order_index: number;
+          published: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<
+          Database["public"]["Tables"]["services"]["Row"],
+          "id" | "created_at" | "updated_at"
+        > & {
+          id?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["services"]["Insert"]>;
+        Relationships: [];
+      };
+
       projects: {
         Row: {
           id: string;
           slug: string;
           title: string;
-          summary: string | null;
-          content: Json | null;
+          client: string;
+          summary: string;
+          category: ProjectCategory;
+          year: number;
+          stack: string[];
+          metrics: ProjectMetric[];
           cover_url: string | null;
-          tech_stack: string[] | null;
           live_url: string | null;
           repo_url: string | null;
+          accent: Accent;
+          featured: boolean;
           published: boolean;
           published_at: string | null;
           created_at: string;
@@ -73,22 +121,32 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["projects"]["Insert"]>;
         Relationships: [];
       };
-      services: {
+
+      testimonials: {
         Row: {
           id: string;
-          slug: string;
-          title: string;
-          summary: string;
-          icon: string | null;
+          quote: string;
+          author: string;
+          author_role: string;
+          company: string;
+          tag: string | null;
           order_index: number;
           published: boolean;
+          created_at: string;
+          updated_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["services"]["Row"], "id"> & {
+        Insert: Omit<
+          Database["public"]["Tables"]["testimonials"]["Row"],
+          "id" | "created_at" | "updated_at"
+        > & {
           id?: string;
+          created_at?: string;
+          updated_at?: string;
         };
-        Update: Partial<Database["public"]["Tables"]["services"]["Insert"]>;
+        Update: Partial<Database["public"]["Tables"]["testimonials"]["Insert"]>;
         Relationships: [];
       };
+
       blog_posts: {
         Row: {
           id: string;
@@ -97,8 +155,10 @@ export interface Database {
           excerpt: string;
           content: string;
           cover_url: string | null;
-          tags: string[] | null;
+          tags: string[];
+          category_slug: string | null;
           author_id: string | null;
+          reading_minutes: number | null;
           published: boolean;
           published_at: string | null;
           created_at: string;
@@ -115,39 +175,60 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["blog_posts"]["Insert"]>;
         Relationships: [];
       };
+
       messages: {
         Row: {
           id: string;
           name: string;
           email: string;
           company: string | null;
+          budget: string | null;
           message: string;
           source: string | null;
+          ip_hash: string | null;
+          user_agent: string | null;
           handled: boolean;
+          handled_by: string | null;
+          handled_at: string | null;
           created_at: string;
         };
         Insert: Omit<
           Database["public"]["Tables"]["messages"]["Row"],
-          "id" | "created_at" | "handled"
+          "id" | "created_at" | "handled" | "handled_by" | "handled_at"
         > & {
           id?: string;
           created_at?: string;
           handled?: boolean;
+          handled_by?: string | null;
+          handled_at?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["messages"]["Insert"]>;
         Relationships: [];
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      current_role: { Args: Record<string, never>; Returns: string };
+      is_admin: { Args: Record<string, never>; Returns: boolean };
+      is_editor_or_admin: { Args: Record<string, never>; Returns: boolean };
+    };
     Enums: { role: DbRole };
     CompositeTypes: Record<string, never>;
   };
 }
 
-/** Convenience aliases used by feature code. */
+/* ---------- Convenience aliases ----------------------------------------- */
+
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
-export type Project = Database["public"]["Tables"]["projects"]["Row"];
-export type Service = Database["public"]["Tables"]["services"]["Row"];
-export type BlogPost = Database["public"]["Tables"]["blog_posts"]["Row"];
-export type Message = Database["public"]["Tables"]["messages"]["Row"];
+export type ServiceRow = Database["public"]["Tables"]["services"]["Row"];
+export type ProjectRow = Database["public"]["Tables"]["projects"]["Row"];
+export type TestimonialRow = Database["public"]["Tables"]["testimonials"]["Row"];
+export type BlogPostRow = Database["public"]["Tables"]["blog_posts"]["Row"];
+export type MessageRow = Database["public"]["Tables"]["messages"]["Row"];
+export type MessageInsert = Database["public"]["Tables"]["messages"]["Insert"];
+
+/** Back-compat aliases — earlier phases imported these names. */
+export type Project = ProjectRow;
+export type Service = ServiceRow;
+export type BlogPost = BlogPostRow;
+export type Message = MessageRow;
