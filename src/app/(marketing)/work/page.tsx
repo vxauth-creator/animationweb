@@ -1,5 +1,8 @@
-import { PagePlaceholder } from "@/components/layout/page-placeholder";
+import { CallToAction } from "@/components/sections/call-to-action";
+import { PageHero } from "@/components/sections/page-hero";
+import { ProjectGrid } from "@/features/work/project-grid";
 import { buildMetadata } from "@/lib/seo/metadata";
+import { projects } from "@/lib/data/projects";
 
 export const metadata = buildMetadata({
   title: "Work",
@@ -9,22 +12,38 @@ export const metadata = buildMetadata({
 });
 
 export default function WorkPage() {
+  const total = projects.length;
+  const stackUnion = Array.from(new Set(projects.flatMap((p) => p.stack))).length;
+
   return (
-    <PagePlaceholder
-      eyebrow="Work"
-      title={
-        <>
-          Selected <span className="text-gradient">work</span>
-        </>
-      }
-      description="An immersive grid of case studies — tech stack, architecture decisions, performance metrics, and live demos. Powered by Supabase content in Phase 4."
-      outline={[
-        { title: "Immersive grid", copy: "Floating cards with parallax and hover depth." },
-        { title: "Case studies", copy: "Deep-dive pages with measurable outcomes." },
-        { title: "Live demos", copy: "Direct links + GitHub references where applicable." },
-        { title: "Tech badges", copy: "At-a-glance stack visibility per project." },
-      ]}
-      phase="Phase 3 · Portfolio"
-    />
+    <>
+      <PageHero
+        eyebrow="Work"
+        title={
+          <>
+            Selected <span className="text-gradient">work</span>
+          </>
+        }
+        description="An immersive grid of recent engagements. Tech stack, architecture, and measurable outcomes — every card a real artifact, not a mood board."
+        meta={[
+          { label: "Projects", value: total.toString() },
+          { label: "Stacks", value: stackUnion.toString() },
+          { label: "Verticals", value: "SaaS · AI · Commerce" },
+          { label: "Year", value: "2023–25" },
+        ]}
+      />
+
+      <ProjectGrid />
+
+      <CallToAction
+        eyebrow="Want to see more?"
+        title={
+          <>
+            We share <span className="text-gradient">teardowns</span> on request.
+          </>
+        }
+        description="If a specific category interests you (SaaS, AI, dashboards, commerce), tell us — we'll send the most relevant teardown."
+      />
+    </>
   );
 }

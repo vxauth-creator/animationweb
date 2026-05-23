@@ -1,4 +1,6 @@
-import { PagePlaceholder } from "@/components/layout/page-placeholder";
+import { CallToAction } from "@/components/sections/call-to-action";
+import { PageHero } from "@/components/sections/page-hero";
+import { ProcessTimeline } from "@/features/process/process-timeline";
 import { buildMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMetadata({
@@ -9,23 +11,34 @@ export const metadata = buildMetadata({
 
 export default function ProcessPage() {
   return (
-    <PagePlaceholder
-      eyebrow="Process"
-      title={
-        <>
-          Six steps from <span className="text-gradient">kickoff to launch</span>
-        </>
-      }
-      description="Discovery, planning, design, development, optimization, and deployment — each step with clear owners, deliverables, and motion-driven storytelling."
-      outline={[
-        { title: "1 · Discovery", copy: "Audience, goals, constraints, success metrics." },
-        { title: "2 · Planning", copy: "Architecture, scope, and milestones." },
-        { title: "3 · Design", copy: "System-driven design with motion specs." },
-        { title: "4 · Development", copy: "Type-safe, accessible, performant builds." },
-        { title: "5 · Optimization", copy: "Lighthouse, a11y, SEO, and motion polish." },
-        { title: "6 · Deployment", copy: "CI/CD with safety nets and observability." },
-      ]}
-      phase="Phase 3 · Process"
-    />
+    <>
+      <PageHero
+        eyebrow="Process"
+        title={
+          <>
+            Six steps from <span className="text-gradient">kickoff to launch</span>
+          </>
+        }
+        description="Discovery, planning, design, development, optimization, deployment. Each step has clear owners, deliverables, and a written definition of done."
+        meta={[
+          { label: "Cadence", value: "Weekly demos" },
+          { label: "Reviews", value: "Async + sync" },
+          { label: "Owners", value: "Studio + you" },
+          { label: "Risk reg.", value: "Day 1" },
+        ]}
+      />
+
+      <ProcessTimeline />
+
+      <CallToAction
+        eyebrow="Like the way we work?"
+        title={
+          <>
+            Let&apos;s find your <span className="text-gradient">first milestone</span>.
+          </>
+        }
+        description="The first 60 minutes are free — we use them to scope the discovery sprint."
+      />
+    </>
   );
 }
