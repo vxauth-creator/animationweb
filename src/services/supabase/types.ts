@@ -1,13 +1,18 @@
 /**
- * Supabase Database types — skeleton.
+ * Supabase Database types — schema mirror.
  *
- * In Phase 4 this file will be REGENERATED from the live schema with:
+ * Hand-authored to mirror `supabase/migrations/*.sql`. Regenerate from a live
+ * project with:
  *
- *   pnpm supabase gen types typescript --project-id <id> > src/services/supabase/types.ts
+ *   pnpm supabase gen types typescript --linked > src/services/supabase/types.ts
  *
- * The shape below is intentionally hand-authored as a forward-compatible
- * skeleton so the rest of the app can compile against it today and we can
- * swap the generated output in without churn.
+ * Until then, keep this file in lockstep with the SQL.
+ *
+ * NOTE: each table's Row/Insert/Update is declared as a local alias *first*
+ * and the `Database` type then references those aliases. Inlining the
+ * relationships (e.g. `Update: Partial<Database[...]["Insert"]>`) creates a
+ * self-reference that TS resolves to `never`, so the Supabase client API
+ * collapses to `unknown`/`never[]` shapes.
  */
 
 export type Json =
@@ -18,136 +23,293 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-/** Roles enforced via RLS in Phase 4. Mirror of `src/types#Role`. */
 export type DbRole = "admin" | "editor" | "client";
 
+export type ProjectCategory =
+  | "saas"
+  | "marketing"
+  | "dashboard"
+  | "commerce"
+  | "ai"
+  | "experience";
+
+export type Accent = "blue" | "cyan" | "violet";
+
+export interface ProjectMetric {
+  value: string;
+  label: string;
+}
+
+/* =============================================================================
+ * profiles
+ * ===========================================================================*/
+type ProfilesRow = {
+  id: string;
+  user_id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  role: DbRole;
+  created_at: string;
+  updated_at: string;
+};
+type ProfilesInsert = {
+  id?: string;
+  user_id: string;
+  full_name?: string | null;
+  avatar_url?: string | null;
+  role?: DbRole;
+  created_at?: string;
+  updated_at?: string;
+};
+type ProfilesUpdate = Partial<ProfilesInsert>;
+
+/* =============================================================================
+ * services
+ * ===========================================================================*/
+type ServicesRow = {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  capabilities: string[];
+  metric_value: string | null;
+  metric_label: string | null;
+  accent: Accent;
+  glyph: string;
+  order_index: number;
+  published: boolean;
+  created_at: string;
+  updated_at: string;
+};
+type ServicesInsert = {
+  id?: string;
+  slug: string;
+  title: string;
+  summary: string;
+  capabilities?: string[];
+  metric_value?: string | null;
+  metric_label?: string | null;
+  accent?: Accent;
+  glyph?: string;
+  order_index?: number;
+  published?: boolean;
+  created_at?: string;
+  updated_at?: string;
+};
+type ServicesUpdate = Partial<ServicesInsert>;
+
+/* =============================================================================
+ * projects
+ * ===========================================================================*/
+type ProjectsRow = {
+  id: string;
+  slug: string;
+  title: string;
+  client: string;
+  summary: string;
+  category: ProjectCategory;
+  year: number;
+  stack: string[];
+  metrics: ProjectMetric[];
+  cover_url: string | null;
+  live_url: string | null;
+  repo_url: string | null;
+  accent: Accent;
+  featured: boolean;
+  published: boolean;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+type ProjectsInsert = {
+  id?: string;
+  slug: string;
+  title: string;
+  client: string;
+  summary: string;
+  category: ProjectCategory;
+  year: number;
+  stack?: string[];
+  metrics?: ProjectMetric[];
+  cover_url?: string | null;
+  live_url?: string | null;
+  repo_url?: string | null;
+  accent?: Accent;
+  featured?: boolean;
+  published?: boolean;
+  published_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+type ProjectsUpdate = Partial<ProjectsInsert>;
+
+/* =============================================================================
+ * testimonials
+ * ===========================================================================*/
+type TestimonialsRow = {
+  id: string;
+  quote: string;
+  author: string;
+  author_role: string;
+  company: string;
+  tag: string | null;
+  order_index: number;
+  published: boolean;
+  created_at: string;
+  updated_at: string;
+};
+type TestimonialsInsert = {
+  id?: string;
+  quote: string;
+  author: string;
+  author_role: string;
+  company: string;
+  tag?: string | null;
+  order_index?: number;
+  published?: boolean;
+  created_at?: string;
+  updated_at?: string;
+};
+type TestimonialsUpdate = Partial<TestimonialsInsert>;
+
+/* =============================================================================
+ * blog_posts
+ * ===========================================================================*/
+type BlogPostsRow = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  cover_url: string | null;
+  tags: string[];
+  category_slug: string | null;
+  author_id: string | null;
+  reading_minutes: number | null;
+  published: boolean;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+type BlogPostsInsert = {
+  id?: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  cover_url?: string | null;
+  tags?: string[];
+  category_slug?: string | null;
+  author_id?: string | null;
+  reading_minutes?: number | null;
+  published?: boolean;
+  published_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+type BlogPostsUpdate = Partial<BlogPostsInsert>;
+
+/* =============================================================================
+ * messages
+ * ===========================================================================*/
+type MessagesRow = {
+  id: string;
+  name: string;
+  email: string;
+  company: string | null;
+  budget: string | null;
+  message: string;
+  source: string | null;
+  ip_hash: string | null;
+  user_agent: string | null;
+  handled: boolean;
+  handled_by: string | null;
+  handled_at: string | null;
+  created_at: string;
+};
+type MessagesInsert = {
+  id?: string;
+  name: string;
+  email: string;
+  company?: string | null;
+  budget?: string | null;
+  message: string;
+  source?: string | null;
+  ip_hash?: string | null;
+  user_agent?: string | null;
+  handled?: boolean;
+  handled_by?: string | null;
+  handled_at?: string | null;
+  created_at?: string;
+};
+type MessagesUpdate = Partial<MessagesInsert>;
+
+/* =============================================================================
+ * Database
+ * ===========================================================================*/
 export interface Database {
   public: {
     Tables: {
       profiles: {
-        Row: {
-          id: string;
-          user_id: string;
-          full_name: string | null;
-          avatar_url: string | null;
-          role: DbRole;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          full_name?: string | null;
-          avatar_url?: string | null;
-          role?: DbRole;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: Partial<Database["public"]["Tables"]["profiles"]["Insert"]>;
-        Relationships: [];
-      };
-      projects: {
-        Row: {
-          id: string;
-          slug: string;
-          title: string;
-          summary: string | null;
-          content: Json | null;
-          cover_url: string | null;
-          tech_stack: string[] | null;
-          live_url: string | null;
-          repo_url: string | null;
-          published: boolean;
-          published_at: string | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: Omit<
-          Database["public"]["Tables"]["projects"]["Row"],
-          "id" | "created_at" | "updated_at"
-        > & {
-          id?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: Partial<Database["public"]["Tables"]["projects"]["Insert"]>;
+        Row: ProfilesRow;
+        Insert: ProfilesInsert;
+        Update: ProfilesUpdate;
         Relationships: [];
       };
       services: {
-        Row: {
-          id: string;
-          slug: string;
-          title: string;
-          summary: string;
-          icon: string | null;
-          order_index: number;
-          published: boolean;
-        };
-        Insert: Omit<Database["public"]["Tables"]["services"]["Row"], "id"> & {
-          id?: string;
-        };
-        Update: Partial<Database["public"]["Tables"]["services"]["Insert"]>;
+        Row: ServicesRow;
+        Insert: ServicesInsert;
+        Update: ServicesUpdate;
+        Relationships: [];
+      };
+      projects: {
+        Row: ProjectsRow;
+        Insert: ProjectsInsert;
+        Update: ProjectsUpdate;
+        Relationships: [];
+      };
+      testimonials: {
+        Row: TestimonialsRow;
+        Insert: TestimonialsInsert;
+        Update: TestimonialsUpdate;
         Relationships: [];
       };
       blog_posts: {
-        Row: {
-          id: string;
-          slug: string;
-          title: string;
-          excerpt: string;
-          content: string;
-          cover_url: string | null;
-          tags: string[] | null;
-          author_id: string | null;
-          published: boolean;
-          published_at: string | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: Omit<
-          Database["public"]["Tables"]["blog_posts"]["Row"],
-          "id" | "created_at" | "updated_at"
-        > & {
-          id?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: Partial<Database["public"]["Tables"]["blog_posts"]["Insert"]>;
+        Row: BlogPostsRow;
+        Insert: BlogPostsInsert;
+        Update: BlogPostsUpdate;
         Relationships: [];
       };
       messages: {
-        Row: {
-          id: string;
-          name: string;
-          email: string;
-          company: string | null;
-          message: string;
-          source: string | null;
-          handled: boolean;
-          created_at: string;
-        };
-        Insert: Omit<
-          Database["public"]["Tables"]["messages"]["Row"],
-          "id" | "created_at" | "handled"
-        > & {
-          id?: string;
-          created_at?: string;
-          handled?: boolean;
-        };
-        Update: Partial<Database["public"]["Tables"]["messages"]["Insert"]>;
+        Row: MessagesRow;
+        Insert: MessagesInsert;
+        Update: MessagesUpdate;
         Relationships: [];
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      current_role: { Args: Record<string, never>; Returns: string };
+      is_admin: { Args: Record<string, never>; Returns: boolean };
+      is_editor_or_admin: { Args: Record<string, never>; Returns: boolean };
+    };
     Enums: { role: DbRole };
     CompositeTypes: Record<string, never>;
   };
 }
 
-/** Convenience aliases used by feature code. */
-export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
-export type Project = Database["public"]["Tables"]["projects"]["Row"];
-export type Service = Database["public"]["Tables"]["services"]["Row"];
-export type BlogPost = Database["public"]["Tables"]["blog_posts"]["Row"];
-export type Message = Database["public"]["Tables"]["messages"]["Row"];
+/* ---------- Convenience aliases ----------------------------------------- */
+
+export type Profile = ProfilesRow;
+export type ServiceRow = ServicesRow;
+export type ProjectRow = ProjectsRow;
+export type TestimonialRow = TestimonialsRow;
+export type BlogPostRow = BlogPostsRow;
+export type MessageRow = MessagesRow;
+export type MessageInsert = MessagesInsert;
+
+/** Back-compat aliases — earlier phases imported these names. */
+export type Project = ProjectsRow;
+export type Service = ServicesRow;
+export type BlogPost = BlogPostsRow;
+export type Message = MessagesRow;

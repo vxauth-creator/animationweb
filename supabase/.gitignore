@@ -1,0 +1,8 @@
+# Local dev artifacts produced by `supabase start`.
+.branches
+.temp
+
+# Generated types — regenerate with `pnpm supabase:types`.
+# We commit a hand-authored skeleton at src/services/supabase/types.ts; this
+# block prevents accidentally checking in the generated file under supabase/.
+generated/
