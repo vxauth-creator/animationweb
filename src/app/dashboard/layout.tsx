@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 
 import { Container } from "@/components/ui/container";
 import { GlassCard } from "@/components/ui/glass-card";
+import { Toaster } from "@/components/feedback/toaster";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { capabilities } from "@/lib/utils/env";
 import { getAuthContext } from "@/services/supabase/auth";
@@ -151,6 +152,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
         <section>{children}</section>
       </div>
+      <Toaster />
     </Container>
   );
 }

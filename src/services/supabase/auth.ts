@@ -1,8 +1,9 @@
 import "server-only";
 
+import { redirect } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 
-import type { Profile } from "./types";
+import type { DbRole, Profile } from "./types";
 import { getSupabaseServerClient } from "./server";
 
 /**
@@ -62,4 +63,31 @@ export const getAuthContext = async (): Promise<AuthContext | null> => {
 export const getCurrentRole = async (): Promise<Profile["role"] | null> => {
   const ctx = await getAuthContext();
   return ctx?.profile.role ?? null;
+};
+
+/**
+ * `requireRole` — page-level RBAC guard.
+ *
+ * Use at the top of any Server Component / Server Action that requires a
+ * specific role. Behavior:
+ *   - Unauthed:     redirect to `/login?next=...`
+ *   - Wrong role:   redirect to `/dashboard?error=forbidden`
+ *   - Authorized:   returns the typed `AuthContext`
+ *
+ * Designed to compose: in a server action you can call this first to
+ * short-circuit the rest of the function if the caller isn't allowed.
+ */
+export const requireRole = async (
+  allowed: ReadonlyArray<DbRole>,
+  options?: { next?: string },
+): Promise<AuthContext> => {
+  const ctx = await getAuthContext();
+  if (!ctx) {
+    const nextParam = options?.next ? `?next=${encodeURIComponent(options.next)}` : "";
+    redirect(`/login${nextParam}`);
+  }
+  if (!allowed.includes(ctx.profile.role)) {
+    redirect("/dashboard?error=forbidden");
+  }
+  return ctx;
 };
