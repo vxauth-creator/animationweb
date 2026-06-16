@@ -34,7 +34,9 @@ export const Reveal = ({
   className,
   children,
 }: RevealProps) => {
-  const Tag = (as ?? "span") as ElementType;
+  // Cast to a permissive ElementType so polymorphic JSX doesn't collapse
+  // children to `never` under React 19's stricter intrinsic-attribute types.
+  const Tag = (as ?? "span") as ElementType<{ className?: string; children?: ReactNode }>;
   const fromY = direction === "up" ? "100%" : "-100%";
 
   return (

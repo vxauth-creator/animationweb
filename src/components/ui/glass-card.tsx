@@ -31,7 +31,9 @@ export const GlassCard = ({
   children,
   ...rest
 }: GlassCardProps) => {
-  const Tag = (as ?? "div") as ElementType;
+  // Cast to a permissive ElementType so React 19's stricter `JSX.IntrinsicAttributes`
+  // doesn't collapse the children type to `never` on polymorphic usage.
+  const Tag = (as ?? "div") as ElementType<ComponentPropsWithoutRef<"div">>;
   return (
     <Tag
       className={cn(
